@@ -59,8 +59,10 @@ def make_ingredient_compound_dict(raw_text_dict):
         :param raw_ing_string: ingredient string for a single flavor compound
         :return: extracted list of ingredients
         """
-        split_seq = ['reported found in\s*', 'also reported found in', '  ', ' and ', ',',
-                     ';', 'also ', 'in the oils* of', 'in\s+']
+        split_seq = ['reported found in\s*', 'reported[ly]* present in\s*',
+                     'the.*oils*', 'originally identified in',
+                     'reportedly found in\s*', 'also reported found in', '  ', ' and other ', ' and ', ',', ';',
+                     'also ', 'in\s+']
         ingr_list = [raw_ing_string.lower()]
         for term in split_seq:
             nested_list = map(lambda x: re.split(term, x), ingr_list)
@@ -72,11 +74,13 @@ def make_ingredient_compound_dict(raw_text_dict):
         flavor_raw_text_dict[compound] = ingredient_extractor(ingr_str)
 
     ingredient_compound_dict = defaultdict(list)
+    keep_list = ['fig', 'cow', 'fig', 'cod', 'ham', 'hop', 'gin', 'fat', 'tea', 'rye', 'egg', 'pea', 'rum',
+                 'eel', 'jam', 'soy', 'oak']
     for k, v in flavor_raw_text_dict.iteritems():
         for ing in v:
-            ingredient_compound_dict[ing].append(k)
-
-    return flavor_raw_text_dict
+            if len(ing) > 3 or ing in keep_list:
+                ingredient_compound_dict[ing].append(k)
+    return ingredient_compound_dict
 
 if __name__ == '__main__':
     with open('../../data/doc_joined.pkl', 'r') as f:
