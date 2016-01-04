@@ -59,10 +59,11 @@ def make_ingredient_compound_dict(raw_text_dict):
         :param raw_ing_string: ingredient string for a single flavor compound
         :return: extracted list of ingredients
         """
-        split_seq = ['reported found in', 'reported  found  in', 'also reported found in', ' and ', ',']
+        split_seq = ['reported found in\s*', 'also reported found in', '  ', ' and ', ',',
+                     ';', 'also ', 'in the oils* of', 'in\s+']
         ingr_list = [raw_ing_string.lower()]
         for term in split_seq:
-            nested_list = map(lambda x: x.split(term), ingr_list)
+            nested_list = map(lambda x: re.split(term, x), ingr_list)
             ingr_list = [i.strip() for sublist in nested_list for i in sublist if i]
         return ingr_list
 
@@ -75,7 +76,7 @@ def make_ingredient_compound_dict(raw_text_dict):
         for ing in v:
             ingredient_compound_dict[ing].append(k)
 
-    return ingredient_compound_dict
+    return flavor_raw_text_dict
 
 if __name__ == '__main__':
     with open('../../data/doc_joined.pkl', 'r') as f:
