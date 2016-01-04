@@ -9,19 +9,6 @@ def build_weighted_graph(ing_comp_dict):
     :param ing_comp_dict: ingredient:compound dictionary
     :return: SGraph that represents the flavor network
     """
-
-    def degree_count_fn (src, edge, dst):
-        """
-        increments the degree of the nodes on this edge
-        :param src:
-        :param edge:
-        :param dst:
-        :return:
-        """
-        src['deg'] += 1
-        dst['deg'] += 1
-        return (src, edge, dst)
-
     flav_network = SGraph()
     vert_list = []
     edge_list = []
@@ -37,13 +24,32 @@ def build_weighted_graph(ing_comp_dict):
 
     flav_network = flav_network.add_vertices(vert_list)
     flav_network = flav_network.add_edges(edge_list)
+    return flav_network
+
+def extract_backbone(flavor_network):
+    """
+    return a new graph with only the edges that meet the requirement for statistical significance
+    :param ing_comp_graph: full flavor ingredient network
+    :return: the pruned SGraph
+    """
+    def degree_count_fn(src, edge, dst):
+        """
+        increments the degree of the nodes on this edge
+        :param src:
+        :param edge:
+        :param dst:
+        :return:
+        """
+        src['deg'] += 1
+        dst['deg'] += 1
+        return (src, edge, dst)
+
     flav_net_w_deg = SGraph()
-    new_node_list = flav_network.vertices.fillna('deg', 0)
+    edge_list = flavor_network.get_edges()
+    new_node_list = flavor_network.vertices.fillna('deg', 0)
     flav_net_w_deg = flav_net_w_deg.add_vertices(new_node_list).add_edges(edge_list)
-    flav_net = flav_net_w_deg.triple_apply(degree_count_fn, mutated_fields=['deg'])
-
-    return flav_net
-
+    pruned_flavor_network = flav_net_w_deg.triple_apply(degree_count_fn, mutated_fields=['deg'])
+    return pruned_flavor_network
 
 # with open('./data/first_ing_comp_dict.pkl', 'r') as f:
 #     ing_comp_dict = pickle.load(f)
