@@ -83,7 +83,7 @@ def make_ingredient_compound_dict(raw_text_dict):
     return ingredient_compound_dict
 
 if __name__ == '__main__':
-    with open('../../data/doc_joined.pkl', 'r') as f:
+    with open('../data/first_ing_comp_dict.pkl', 'r') as f:
         joined = pickle.load(f)
     cleaned_joined = joined.replace('.', ' ')
     fcd = make_ingredient_compound_dict(cleaned_joined)
