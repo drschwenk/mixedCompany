@@ -1,5 +1,5 @@
 import unittest2 as unittest
-from parser import flavor_ingredient_mapper
+from parser import text_from_pdf
 import cPickle as pickle
 
 with open('../../data/doc_joined.pkl', 'r') as f:
@@ -8,17 +8,17 @@ with open('../../data/doc_joined.pkl', 'r') as f:
 cleaned_joined = joined.replace('.', ' ')
 
 class pdf_parser_test(unittest.TestCase):
-    result = flavor_ingredient_mapper(cleaned_joined)
+    result = text_from_pdf(cleaned_joined)
 
     def test_compound_1(self):
             ing_string = 'Reported found in the distillation waters of several plants, such as Carpinus betulus; also' \
-                         ' identified among the constituents of tea (leaves) oil and in citronella  Also reported found' \
-                         ' in numerous foods including apple juice, apricot, banana, citrus peel oils and juices,' \
-                         ' blueberry, strawberry, guava, peach, pear, melon, cabbage, kohlrabi, cucumber, lettuce, ' \
-                         'leek, peas, tomato, thy-mus, butter, milk, fish, fish oil, meats, hop oil, beer, grape wines, ' \
-                         'peanut oil, pecans, potato chips, soybeans, avocado, olive, passion fruit, plum, Malay apple, ' \
-                         'star fruit, mango, cauliflower, fig, artichoke, coriander leaf, rice, radish, lovage leaf, ' \
-                         'laurel, loquat, endive, nectarines, clam, quince and tobacco'
+                    ' identified among the constituents of tea (leaves) oil and in citronella  Also reported found' \
+                    ' in numerous foods including apple juice, apricot, banana, citrus peel oils and juices,' \
+                    ' blueberry, strawberry, guava, peach, pear, melon, cabbage, kohlrabi, cucumber, lettuce, ' \
+                    'leek, peas, tomato, thy-mus, butter, milk, fish, fish oil, meats, hop oil, beer, grape wines, ' \
+                    'peanut oil, pecans, potato chips, soybeans, avocado, olive, passion fruit, plum, Malay apple, ' \
+                    'star fruit, mango, cauliflower, fig, artichoke, coriander leaf, rice, radish, lovage leaf, ' \
+                    'laurel, loquat, endive, nectarines, clam, quince and tobacco'
             self.assertEquals(self.result['2-HEXENAL'], ing_string)
 
     def test_compound_2(self):

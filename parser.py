@@ -2,10 +2,11 @@ import cPickle as pickle
 import re
 from collections import defaultdict, deque
 
-def flavor_ingredient_mapper(raw_text):
+
+def text_from_pdf(raw_text):
     """
     Creates a chemical compound to ingredient mapping from fenaroli's flavors. The ingredients are not individually
-    extracted here, and instead returned as a single combined string
+    extracted here, and instead are returned as a single combined string
     :param raw_text: single string containing entire doc
     :return: dictionary mapping compound:ingredient list
     """
@@ -44,8 +45,40 @@ def flavor_ingredient_mapper(raw_text):
     flav_comp_dict = {k: v for k, v in flavor_dict.iteritems() if v not in remove_terms}
     return flav_comp_dict
 
+
+def make_ingredient_compound_dict(raw_text_dict):
+    """
+    Extracts a list of ingredients for a compound from the raw text parsed from the pdf.
+    Inverts this dict to create the desired mapping of ingredients to their component flavor compounds.
+    :param raw_text_dict: dict mapping flavors to raw text describing their natural occurrences.
+    :return: ingredient : flavour compound dict
+    """
+    def ingredient_extractor(raw_ing_string):
+        """
+        creates ingredient list for a single compound
+        :param raw_ing_string: ingredient string for a single flavor compound
+        :return: extracted list of ingredients
+        """
+        split_seq = ['reported found in', 'reported  found  in', 'also reported found in', ' and ', ',']
+        ingr_list = [raw_ing_string.lower()]
+        for term in split_seq:
+            nested_list = map(lambda x: x.split(term), ingr_list)
+            ingr_list = [i.strip() for sublist in nested_list for i in sublist if i]
+        return ingr_list
+
+    flavor_raw_text_dict = raw_text_dict.copy()
+    for compound, ingr_str in flavor_raw_text_dict.iteritems():
+        flavor_raw_text_dict[compound] = ingredient_extractor(ingr_str)
+
+    ingredient_compound_dict = defaultdict(list)
+    for k, v in flavor_raw_text_dict.iteritems():
+        for ing in v:
+            ingredient_compound_dict[ing].append(k)
+
+    return ingredient_compound_dict
+
 if __name__ == '__main__':
     with open('../../data/doc_joined.pkl', 'r') as f:
         joined = pickle.load(f)
     cleaned_joined = joined.replace('.', ' ')
-    fcd = flavor_ingredient_mapper(cleaned_joined)
+    fcd = make_ingredient_compound_dict(cleaned_joined)
