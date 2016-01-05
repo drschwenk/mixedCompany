@@ -3,6 +3,7 @@ from graphlab import SGraph, Vertex, Edge
 import cPickle as pickle
 from math import sqrt
 
+
 def build_weighted_graph(ing_comp_dict):
     """
     builds the weighted undirected graph that is the flavor network
@@ -26,6 +27,7 @@ def build_weighted_graph(ing_comp_dict):
     flav_network = flav_network.add_edges(edge_list)
     return flav_network
 
+
 def extract_backbone(flavor_network):
     """
     return a new graph with only the edges that meet the requirement for statistical significance
@@ -45,7 +47,6 @@ def extract_backbone(flavor_network):
         return src, edge, dst
 
     def compute_node_moments(node_k):
-        # node_k = float(node.attr.values()[0])
         mean = 2*node_k/(node_k+1)
         sigma = sqrt(node_k**2*((20 + 4*node_k)/((node_k + 1)*(node_k + 2)*(node_k + 3)) - 4/(node_k + 1)**2))
         return mean, sigma
