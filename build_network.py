@@ -1,5 +1,5 @@
 import graphlab as gl
-from graphlab import SGraph, Vertex, Edge, degree_counting, connected_components
+from graphlab import SGraph, Vertex, Edge
 import cPickle as pickle
 from math import sqrt
 
@@ -47,17 +47,17 @@ def extract_backbone(flavor_network):
     def compute_node_moments(node):
         k = float(node.attr.values()[0])
         mean = 2*k/(k+1)
-        sigma = sqrt(k**2*((20 + 4*k)/((k + 1)(k + 2)(k + 3)) - 4/(k + 1)**2))
+        sigma = sqrt(k**2*((20 + 4*k)/((k + 1)*(k + 2)*(k + 3)) - 4/(k + 1)**2))
         return mean, sigma
 
     def test_for_significance(edge, alpha):
-        y_obs = edge.attr.values()[0]
-        node1 = edge.dst_vid
-        node2 = edge.src.vid
+        y_obs = edge['weight']
+        node1 = flav_net_w_deg.get_vertices(edge['__dst_id'], format='list')[0]
+        node2 = flav_net_w_deg.get_vertices(edge['__src_id'], format='list')[0]
         m1, sig1 = compute_node_moments(node1)
         m2, sig2 = compute_node_moments(node2)
 
-        return y_obs > (m1 + alpha*sig1) or y_obs > (m2 + alpha*sig2)
+        return y_obs >= abs(m1 + alpha*sig1) or y_obs >= abs(m2 + alpha*sig2)
 
     flav_net_w_deg = SGraph()
     edge_list = flavor_network.get_edges()
@@ -66,10 +66,14 @@ def extract_backbone(flavor_network):
     flav_net_w_deg = flav_net_w_deg.triple_apply(degree_count_fn, mutated_fields=['deg'])
 
     significant_edges = []
-    # for edge in flav_net_w_deg.get_edges():
-    #     if test_for_significance(edge, 1):
-    #         significant_edges.append(edge)
-    return flav_net_w_deg
+    for edge in flav_net_w_deg.get_edges():
+        if test_for_significance(edge, 1):
+            significant_edges.append(flav_net_w_deg.get_edges(src_ids=edge['__src_id'],
+                                                              dst_ids=edge['__dst_id'], format='list')[0])
+
+    pruned_network = SGraph().add_vertices(new_node_list)
+    pruned_network = pruned_network.add_edges(significant_edges)
+    return pruned_network
 
 if __name__ == '__main__':
     with open('../../notebooks/data/first_ing_comp_dict.pkl', 'r') as f:
