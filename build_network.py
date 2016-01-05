@@ -28,9 +28,9 @@ def build_weighted_graph(ing_comp_dict):
     return flav_network
 
 
-def extract_backbone(flavor_network):
+def extract_backbone(flavor_network, alpha):
     """
-    return a new graph with only the edges that meet the requirement for statistical significance
+    makes a new graph with only the edges with weights that exceed the threshold for statistical significance
     :param ing_comp_graph: full flavor ingredient network
     :return: the pruned SGraph
     """
@@ -69,10 +69,9 @@ def extract_backbone(flavor_network):
 
     significant_edges = []
     for edge in flav_net_w_deg.get_edges():
-        if test_for_significance(edge, weights_dict, 2):
+        if test_for_significance(edge, weights_dict, alpha):
             significant_edges.append(flav_net_w_deg.get_edges(src_ids=edge['__src_id'],
                                                               dst_ids=edge['__dst_id'], format='list')[0])
-
     pruned_network = SGraph().add_vertices(new_node_list)
     pruned_network = pruned_network.add_edges(significant_edges)
     return pruned_network
