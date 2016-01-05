@@ -44,18 +44,18 @@ def extract_backbone(flavor_network):
         dst['deg'] += 1
         return src, edge, dst
 
-    def compute_node_moments(node):
-        k = float(node.attr.values()[0])
-        mean = 2*k/(k+1)
-        sigma = sqrt(k**2*((20 + 4*k)/((k + 1)*(k + 2)*(k + 3)) - 4/(k + 1)**2))
+    def compute_node_moments(node_k):
+        # node_k = float(node.attr.values()[0])
+        mean = 2*node_k/(node_k+1)
+        sigma = sqrt(node_k**2*((20 + 4*node_k)/((node_k + 1)*(node_k + 2)*(node_k + 3)) - 4/(node_k + 1)**2))
         return mean, sigma
 
-    def test_for_significance(edge, alpha):
+    def test_for_significance(edge, weights_lookup, alpha):
         y_obs = edge['weight']
-        node1 = flav_net_w_deg.get_vertices(edge['__dst_id'], format='list')[0]
-        node2 = flav_net_w_deg.get_vertices(edge['__src_id'], format='list')[0]
-        m1, sig1 = compute_node_moments(node1)
-        m2, sig2 = compute_node_moments(node2)
+        node1_k = weights_lookup[edge['__dst_id']]
+        node2_k = weights_lookup[edge['__src_id']]
+        m1, sig1 = compute_node_moments(float(node1_k))
+        m2, sig2 = compute_node_moments(float(node2_k))
 
         return y_obs >= abs(m1 + alpha*sig1) or y_obs >= abs(m2 + alpha*sig2)
 
@@ -64,10 +64,11 @@ def extract_backbone(flavor_network):
     new_node_list = flavor_network.vertices.fillna('deg', 0)
     flav_net_w_deg = flav_net_w_deg.add_vertices(new_node_list).add_edges(edge_list)
     flav_net_w_deg = flav_net_w_deg.triple_apply(degree_count_fn, mutated_fields=['deg'])
+    weights_dict = flav_net_w_deg.vertices.to_dataframe().set_index('__id').to_dict()['deg']
 
     significant_edges = []
     for edge in flav_net_w_deg.get_edges():
-        if test_for_significance(edge, 1):
+        if test_for_significance(edge, weights_dict, 2):
             significant_edges.append(flav_net_w_deg.get_edges(src_ids=edge['__src_id'],
                                                               dst_ids=edge['__dst_id'], format='list')[0])
 
