@@ -1,7 +1,8 @@
 from fuzzywuzzy import fuzz, process
 from collections import defaultdict
 from itertools import permutations
-
+import cPickle as pickle
+import itertools
 
 def match_ingredients(recipe, comp_ing_dict):
     sanitzed_comp_ing = {k.decode('utf-8'): v for k, v in comp_ing_dict.iteritems()}
@@ -35,16 +36,39 @@ def compute_single_avg_weight(recipe, comp_ing_dict, edge_dict):
 
 
 def compute_all_weights(recipe_dict, comp_ing_dict, edge_list):
-    edge_dict = defaultdict(int)
+    """
+
+    :param recipe_dict: dictionary of cocktail recipes
+    :param comp_ing_dict: flavor component : ingredient_dict
+    :param edge_list:
+    :return:
+    """
+    # edge_dict = defaultdict(int)
+    edge_dict = edge_list
     recipe_weights = defaultdict(float)
-    for edge in edge_list:
-        n1 = edge.dst_vid
-        n2 = edge.src_vid
-        key = n1+', '+n2
-        edge_dict[key] = edge.attr['weight']
+    # for edge in edge_list:
+    #     n1 = edge.dst_vid
+    #     n2 = edge.src_vid
+    #     key = n1+', '+n2
+    #     edge_dict[key] = edge.attr['weight']
 
     for recipe_name, ingredients in recipe_dict.iteritems():
         recipe_weights[recipe_name] = compute_single_avg_weight(ingredients, comp_ing_dict, edge_dict)
 
-    return edge_dict
+    return recipe_weights
 
+if __name__ == '__main__':
+    with open('./backbone_edges_dict.pkl') as f:
+        edge_dict = pickle.load(f)
+    with open('./data/second_ing_flav_dict.pkl', 'r') as f:
+        comp_ing_dict = pickle.load(f)
+    with open('./data/comb_recipes.pkl', 'r') as f:
+        comb_recipes = pickle.load(f)
+
+    def get_range(dictionary, begin, end):
+        return dict(itertools.islice(dictionary.iteritems(), begin, end+1))
+
+    weight_dict = compute_all_weights(get_range(comb_recipes, 0, 10), comp_ing_dict, edge_dict)
+
+    with open('./avg_recipe_weights.pkl', 'w') as f:
+        pickle.dump(weight_dict, f)
