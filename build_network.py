@@ -22,13 +22,12 @@ def build_weighted_graph(ing_comp_dict):
             if weight > 0:
                 edge_list.append(Edge(node_1_ingr, node_2_ingr, attr={'weight': weight}))
         vert_list.append(Vertex(node_1_ingr))
-
     flav_network = flav_network.add_vertices(vert_list)
     flav_network = flav_network.add_edges(edge_list)
-    return flav_network
+    return flav_network, vert_list, edge_list
 
 
-def extract_backbone(flavor_network, alpha):
+def extract_backbone(flavor_network, vertices, edges, alpha):
     """
     makes a new graph with only the edges with weights that exceed the threshold for statistical significance
     :param ing_comp_graph: full flavor ingredient network
@@ -52,29 +51,27 @@ def extract_backbone(flavor_network, alpha):
         return mean, sigma
 
     def test_for_significance(edge, weights_lookup, alpha):
-        y_obs = edge['weight']
-        node1_k = weights_lookup[edge['__dst_id']]
-        node2_k = weights_lookup[edge['__src_id']]
+        y_obs = edge.attr['weight']
+        node1_k = weights_lookup[edge.dst_vid]
+        node2_k = weights_lookup[edge.src_vid]
         m1, sig1 = compute_node_moments(float(node1_k))
         m2, sig2 = compute_node_moments(float(node2_k))
 
         return y_obs >= abs(m1 + alpha*sig1) or y_obs >= abs(m2 + alpha*sig2)
 
     flav_net_w_deg = SGraph()
-    edge_list = flavor_network.get_edges()
     new_node_list = flavor_network.vertices.fillna('deg', 0)
-    flav_net_w_deg = flav_net_w_deg.add_vertices(new_node_list).add_edges(edge_list)
+    flav_net_w_deg = flav_net_w_deg.add_vertices(new_node_list).add_edges(edges)
     flav_net_w_deg = flav_net_w_deg.triple_apply(degree_count_fn, mutated_fields=['deg'])
     weights_dict = flav_net_w_deg.vertices.to_dataframe().set_index('__id').to_dict()['deg']
 
     significant_edges = []
-    for edge in flav_net_w_deg.get_edges():
+    for edge in edges:
         if test_for_significance(edge, weights_dict, alpha):
-            significant_edges.append(flav_net_w_deg.get_edges(src_ids=edge['__src_id'],
-                                                              dst_ids=edge['__dst_id'], format='list')[0])
-    pruned_network = SGraph().add_vertices(new_node_list)
-    pruned_network = pruned_network.add_edges(significant_edges)
-    return pruned_network
+            significant_edges.append(edge)
+    # pruned_network = SGraph().add_vertices(new_node_list)
+    # pruned_network = pruned_network.add_edges(significant_edges)
+    return significant_edges
 
 if __name__ == '__main__':
     with open('../../notebooks/data/first_ing_comp_dict.pkl', 'r') as f:
