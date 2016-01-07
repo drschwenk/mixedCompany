@@ -4,12 +4,16 @@ from itertools import permutations
 import cPickle as pickle
 import itertools
 
+
 def match_ingredients(recipe, comp_ing_dict):
     sanitzed_comp_ing = {k.decode('utf-8'): v for k, v in comp_ing_dict.iteritems()}
     matches = []
     for ing in recipe:
-        match_list = process.extractBests(ing, sanitzed_comp_ing.keys(), scorer=fuzz.token_set_ratio, score_cutoff=80)
-        matches+= [match[0] for match in match_list]
+        match_list = process.extractBests(ing, sanitzed_comp_ing.keys(), scorer=fuzz.ratio, score_cutoff=98)
+        matches += [match[0] for match in match_list]
+        match_list = process.extractBests(ing, sanitzed_comp_ing.keys(), scorer=fuzz.partial_token_set_ratio,
+                                                                                            score_cutoff=80)
+        matches += [match[0] for match in match_list]
     return list(set(matches))
 
 
@@ -24,14 +28,12 @@ def compute_single_avg_weight(recipe, comp_ing_dict, edge_dict):
     pairwise_combos = list(permutations(match_ingredients(recipe, comp_ing_dict), 2))
     tot_weight = 0
     norm_factor = float(2) / (len(recipe)*(len(recipe)-1))
-    # I compute permutations here because there's no way to know how the ingredients are ordered in the edge dict keys
+    # I use permutations here because there's no way to know how the ingredients are ordered in the edge dict keys
     edge_ids = []
     for ing_pair in pairwise_combos:
         edge_ids.append(ing_pair[0] + ', ' + ing_pair[1])
-
     for edge_id in edge_ids:
         tot_weight += edge_dict[edge_id]
-
     return tot_weight * norm_factor
 
 
@@ -41,7 +43,7 @@ def compute_all_weights(recipe_dict, comp_ing_dict, edge_list):
     :param recipe_dict: dictionary of cocktail recipes
     :param comp_ing_dict: flavor component : ingredient_dict
     :param edge_list:
-    :return:
+    :return: dictionary of avg weights
     """
     # edge_dict = defaultdict(int)
     edge_dict = edge_list
