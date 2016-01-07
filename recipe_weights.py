@@ -17,7 +17,7 @@ def match_ingredients(recipe, comp_ing_dict):
     return list(set(matches))
 
 
-def compute_single_avg_weight(recipe, comp_ing_dict, edge_dict):
+def compute_single_avg_weight(recipe, comp_ing_dict, edge_dict, match_dict):
     """
     computes the average weight of the ingredients in a recipe
     :param recipe single list of ingredients
@@ -25,7 +25,11 @@ def compute_single_avg_weight(recipe, comp_ing_dict, edge_dict):
     :param edge_dict: dict of edges comprising the flavor network
     :return: avg weight of this recipe
     """
-    pairwise_combos = list(permutations(match_ingredients(recipe, comp_ing_dict), 2))
+    ingredients = []
+    for ing in recipe:
+        if ing:
+            ingredients += match_dict[ing]
+    pairwise_combos = permutations(ingredients, 2)
     tot_weight = 0
     norm_factor = float(2) / (len(recipe)*(len(recipe)-1))
     # I use permutations here because there's no way to know how the ingredients are ordered in the edge dict keys
@@ -42,25 +46,22 @@ def compute_all_weights(recipe_dict, comp_ing_dict, edge_list):
 
     :param recipe_dict: dictionary of cocktail recipes
     :param comp_ing_dict: flavor component : ingredient_dict
-    :param edge_list:
+    :param edge_list: list of edges from the flavor graph
     :return: dictionary of avg weights
     """
     # edge_dict = defaultdict(int)
     edge_dict = edge_list
+    unique_ing_list = list(set([i for sublist in recipe_dict.values() for i in sublist if i]))
+    print len(unique_ing_list)
+    match_dict = {k:match_ingredients([k], comp_ing_dict) for k in unique_ing_list}
+
     recipe_weights = defaultdict(float)
-    # for edge in edge_list:
-    #     n1 = edge.dst_vid
-    #     n2 = edge.src_vid
-    #     key = n1+', '+n2
-    #     edge_dict[key] = edge.attr['weight']
-
     for recipe_name, ingredients in recipe_dict.iteritems():
-        recipe_weights[recipe_name] = compute_single_avg_weight(ingredients, comp_ing_dict, edge_dict)
-
+        recipe_weights[recipe_name] = compute_single_avg_weight(ingredients, comp_ing_dict, edge_dict, match_dict)
     return recipe_weights
 
 if __name__ == '__main__':
-    with open('./backbone_edges_dict.pkl') as f:
+    with open('./data/backbone_edges_dict.pkl') as f:
         edge_dict = pickle.load(f)
     with open('./data/second_ing_flav_dict.pkl', 'r') as f:
         comp_ing_dict = pickle.load(f)
@@ -70,7 +71,7 @@ if __name__ == '__main__':
     def get_range(dictionary, begin, end):
         return dict(itertools.islice(dictionary.iteritems(), begin, end+1))
 
-    weight_dict = compute_all_weights(get_range(comb_recipes, 0, 10), comp_ing_dict, edge_dict)
+    weight_dict = compute_all_weights(comb_recipes, comp_ing_dict, edge_dict)
 
-    with open('./avg_recipe_weights.pkl', 'w') as f:
+    with open('./new_avg_recipe_weights.pkl', 'w') as f:
         pickle.dump(weight_dict, f)
