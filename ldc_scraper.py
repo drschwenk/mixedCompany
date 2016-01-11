@@ -5,7 +5,7 @@ from base_scraper import Scraper
 
 class LdcScraper(Scraper):
     """
-    implements methods particular to scraping of liquor.com
+    Implements methods particular to scraping of liquor.com
     """
     def __init__(self):
         super(LdcScraper, self).__init__('ldc')
@@ -41,7 +41,7 @@ class LdcScraper(Scraper):
         url_first = 'http://liquor.com/?post_type=recipe&s='
         url_rest_1 = 'http://liquor.com/page/'
         url_rest_2 = '/?post_type=recipe&s#038;s'
-
+        # This first page of results has a different url structure, so I do it separately
         self.drink_links += parse_page(make_request(url_first))
         for n in range(2, n_results):
             url = url_rest_1 + str(n) + url_rest_2

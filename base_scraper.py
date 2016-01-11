@@ -19,7 +19,7 @@ class Scraper(object):
     def get_recipe_links(self, n_results):
         pass
 
-    def get_recipe(self):
+    def get_recipe(self, url):
         pass
 
     def get_all_recipes(self):
