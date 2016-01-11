@@ -5,10 +5,10 @@ from base_scraper import Scraper
 
 class LdcScraper(Scraper):
     """
-    implements methods particular to scraping of liqour.com
+    implements methods particular to scraping of liquor.com
     """
     def __init__(self):
-        super(LdcScraper, self).__init__('lcd')
+        super(LdcScraper, self).__init__('ldc')
 
     def get_recipe_links(self, n_results=124):
         """
