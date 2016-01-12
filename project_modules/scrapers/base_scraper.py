@@ -31,11 +31,11 @@ class Scraper(object):
             self.get_recipe(drink)
         return None
 
-    def pickle_recipes(self):
+    def pickle_recipes(self, file_name='recipes.pkl'):
         """
         writes recipe dict to pickle file
         :return:
         """
-        with open('recipes.pkl', 'w') as f:
+        with open(file_name, 'w') as f:
             pickle.dump(self.recipes, f)
         return None
