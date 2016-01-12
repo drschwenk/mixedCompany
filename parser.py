@@ -1,6 +1,6 @@
 import cPickle as pickle
-import re
 from collections import defaultdict, deque
+import re
 
 
 def text_from_pdf(raw_text):
@@ -70,16 +70,17 @@ def make_ingredient_compound_dict(raw_text_dict):
         return ingr_list
 
     flavor_raw_text_dict = raw_text_dict.copy()
-    for compound, ingr_str in flavor_raw_text_dict.iteritems():
-        flavor_raw_text_dict[compound] = ingredient_extractor(ingr_str)
+    for compound, ingredient in flavor_raw_text_dict.iteritems():
+        flavor_raw_text_dict[compound] = ingredient_extractor(ingredient)
 
     ingredient_compound_dict = defaultdict(list)
-    keep_list = ['fig', 'cow', 'fig', 'cod', 'ham', 'hop', 'gin', 'fat', 'tea', 'rye', 'egg', 'pea', 'rum',
-                 'eel', 'jam', 'soy', 'oak']
+    keep_list = ['fig', 'cow', 'fig', 'cod', 'ham', 'hop', 'gin', 'fat', 'tea', 
+                 'rye', 'egg', 'pea', 'rum', 'eel', 'jam', 'soy', 'oak']
     for k, v in flavor_raw_text_dict.iteritems():
         for ing in v:
             if len(ing) > 3 or ing in keep_list:
                 ingredient_compound_dict[ing].append(k)
+                
     return ingredient_compound_dict
 
 if __name__ == '__main__':

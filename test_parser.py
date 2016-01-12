@@ -2,12 +2,15 @@ import unittest2 as unittest
 from parser import text_from_pdf
 import cPickle as pickle
 
-with open('../../data/doc_joined.pkl', 'r') as f:
-    joined = pickle.load(f)
 
-cleaned_joined = joined.replace('.', ' ')
-
-class pdf_parser_test(unittest.TestCase):
+class PdfParsingTest(unittest.TestCase):
+    """
+    Defines several tests for the pdf parser.
+    I've chosen a set of compounds that exhibit a wide range of pathological behaviour.
+    """
+    with open('../../data/doc_joined.pkl', 'r') as f:
+        joined = pickle.load(f)
+    cleaned_joined = joined.replace('.', ' ')
     result = text_from_pdf(cleaned_joined)
 
     def test_compound_1(self):
