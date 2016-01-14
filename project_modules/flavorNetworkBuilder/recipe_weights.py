@@ -1,33 +1,15 @@
-from fuzzywuzzy import fuzz, process
 from collections import defaultdict
 from itertools import permutations
 import cPickle as pickle
 
 
-def match_ingredients(recipe, comp_ing_dict):
-    """
-    Makes a fuzzy match between ingredients in a recipe and in the ingredient:compound dict
-    :param recipe: ingredients to match
-    :param comp_ing_dict: compound ingredient dict
-    :return:
-    """
-    sanitized_comp_ing_dict = {k.decode('utf-8'): v for k, v in comp_ing_dict.iteritems()}
-    matches = []
-    for ing in recipe:
-        match_list = process.extractBests(ing, sanitized_comp_ing_dict.keys(), scorer=fuzz.ratio, score_cutoff=98)
-        matches += [match[0] for match in match_list]
-        match_list = process.extractBests(ing, sanitized_comp_ing_dict.keys(), scorer=fuzz.partial_token_set_ratio,
-                                          score_cutoff=80)
-        matches += [match[0] for match in match_list]
-    return list(set(matches))
-
-
-def compute_single_avg_weight(recipe, comp_ing_dict, edge_dict, match_dict):
+def compute_single_avg_weight(recipe, edge_dict, match_dict):
     """
     computes the average weight of the ingredients in a recipe
     :param recipe single list of ingredients
     :param comp_ing_dict compound ingredient dict
     :param edge_dict: dict of edges comprising the flavor network
+    :param match_dict match lookup
     :return: avg weight of this recipe
     """
     ingredients = []
@@ -43,7 +25,7 @@ def compute_single_avg_weight(recipe, comp_ing_dict, edge_dict, match_dict):
         edge_ids.append(ing_pair[0] + ', ' + ing_pair[1])
     for edge_id in edge_ids:
         tot_weight += edge_dict[edge_id]
-    return tot_weight * norm_factor
+    return tot_weight * norm_factor, len(ingredients)
 
 
 def compute_all_weights(recipe_dict, comp_ing_dict, edge_list):

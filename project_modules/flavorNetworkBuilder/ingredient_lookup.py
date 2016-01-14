@@ -1,6 +1,4 @@
-
-
-class IngredientDecompose(object):
+class IngredientDecomposer(object):
     """
     lookup table breaking down common cocktail ingredients into their components
     """
@@ -20,6 +18,23 @@ class IngredientDecompose(object):
                                     'wild cherry bark',
                                     'orris root'
                                  ],
+            'campari': [
+                'bitter orange peel',
+                'Angelica Root',
+                'Buckbean Leaves',
+                'lemon peel',
+                'Anise',
+                'Calamus',
+                'Fennel',
+                'Orris Root',
+                'wormwood',
+                'Cinnamon',
+                'Cloves',
+                'Marjoram',
+                'Sage',
+                'Thyme',
+                'Rosemary'
+            ],
             'aperol': [
                     'bitter orange',
                     'gentian',
@@ -100,3 +115,9 @@ class IngredientDecompose(object):
                 'fennel'
             ]
         }
+
+    def get_component_ingredients(self, compound_ingredient):
+        try:
+            return self.ingredient_lookup[compound_ingredient]
+        except KeyError:
+            return None
