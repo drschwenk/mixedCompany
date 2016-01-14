@@ -25,7 +25,7 @@ def compute_single_avg_weight(recipe, edge_dict, match_dict):
         edge_ids.append(ing_pair[0] + ', ' + ing_pair[1])
     for edge_id in edge_ids:
         tot_weight += edge_dict[edge_id]
-    return tot_weight * norm_factor, len(ingredients)
+    return tot_weight * norm_factor
 
 
 def compute_all_weights(recipe_dict, comp_ing_dict, edge_list):

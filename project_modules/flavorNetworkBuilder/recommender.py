@@ -26,31 +26,6 @@ class FlavorRecommender(object):
         else:
             self.match_dict = match_dict
 
-    def make_rec(self, drink_recipe):
-        """
-        makes a single recommendation
-        :param drink_recipe: user supplied recipe
-        :return: suggested ingredient
-        """
-
-        # def filter_common(ing, score):
-        #     thresholds = {
-        #         'kahlua': 4000,
-        #         'nonalcoholic apple cider or juice': 4000,
-        #         'mango rum': 2000,
-        #         'sweet apple cider': 3000,
-        #         'apple cider syrup': 3000,
-        #         'sparkling apple cider': 3000,
-        #         'fresh apple cider': 3000,
-        #         'apple cider': 3000,
-        #         'apple butter': 3000,
-        #         'coffee beans': 3000
-        #
-        #     }
-        #     try:
-        #         return thresholds[ing] < score
-        #     except KeyError:
-        #         return True
 
         max_score = ('no suggestion', 0)
         for ingredient in self.uniq_ing_list:
@@ -65,26 +40,24 @@ class FlavorRecommender(object):
                 max_score = (ingredient, score)
         return max_score
 
-    def make_rec_2(self, drink_recipe):
+    def make_rec(self, drink_recipe, flavor_threshold):
         """
         makes a single recommendation
         :param drink_recipe: user supplied recipe
+        :flavor_threshold min number of shared compounds to consider
         :return: suggested ingredient
         """
-
-        max_score = ('no suggestion', 0)
         potential_suggestions = []
         for ingredient in self.uniq_ing_list:
-            score = 0
             pairings = permutations(drink_recipe + [ingredient], 2)
             for pair in pairings:
                 try:
-                    score, norm = compute_single_avg_weight(pair, self.edge_dict, self.match_dict)
-                    if score > 10:
+                    score = compute_single_avg_weight(pair, self.edge_dict, self.match_dict)
+                    if score > flavor_threshold:
                         potential_suggestions.append(ingredient)
-                    if score/float(norm+1) > max_score[1]:
-                        max_score = (ingredient, score)
                 except KeyError:
                     pass
-        return random.choice(potential_suggestions)
-
+        if potential_suggestions:
+            return random.choice(potential_suggestions)
+        else:
+            return 'no suggestion'
